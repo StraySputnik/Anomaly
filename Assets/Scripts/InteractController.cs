@@ -88,11 +88,19 @@ public class InteractController : MonoBehaviour
         yield return new WaitForSeconds(cameraFlashDuration);
         cameraLight.enabled = false;
     }
-    
+
     private IEnumerator Shoot()
     {
         gunLight.enabled = true;
+        Monster.Current?.SetVisible(true);
         yield return new WaitForSeconds(gunFlashDuration);
+
+        var ray = Camera.main?.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        if (ray != null && Physics.Raycast(ray.Value, out var hit) &&
+            hit.collider.gameObject.TryGetComponent<Monster>(out var monster))
+            monster.EndEncounter();
+
         gunLight.enabled = false;
+        Monster.Current?.SetVisible(false);
     }
 }

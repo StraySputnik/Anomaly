@@ -14,11 +14,14 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float lookUpLimit = 80.0f;
     [SerializeField] private float lookDownLimit = 89.0f;
 
+    [SerializeField] private float footstepInterval = 1.0f;
+
     private CharacterController _cc;
     private Camera _cam;
     private Vector3 _xVelocity;
     private float _yVelocity;
     private float _pitch;
+    private float _footstepTimer;
 
     private void Awake()
     {
@@ -57,6 +60,14 @@ public class FirstPersonController : MonoBehaviour
 
         var motion = _xVelocity + Vector3.up * _yVelocity;
         _cc.Move(motion * dt);
+
+        if (input == Vector2.zero) return;
+
+        _footstepTimer += Time.deltaTime;
+        if (!(_footstepTimer >= footstepInterval)) return;
+
+        _footstepTimer -= footstepInterval;
+        AudioManager.Instance.PlaySound("footstep");
     }
 
     private void UpdateRotation()
