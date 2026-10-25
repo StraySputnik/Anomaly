@@ -7,8 +7,10 @@ public class Monster : MonoBehaviour
     public static Monster Current { get; private set; }
 
     [SerializeField] private float speed;
+    [SerializeField] private float footstepInterval = 0.25f;
 
     private bool _ended;
+    private float _footstepTimer;
 
     private void Start()
     {
@@ -28,11 +30,13 @@ public class Monster : MonoBehaviour
             return;
         }
 
-        if (!GetComponent<SpriteRenderer>().enabled)
-        {
-            transform.position =
-                Vector3.MoveTowards(transform.position, player.transform.position, Time.deltaTime * speed);
-        }
+        if (GetComponent<SpriteRenderer>().enabled) return;
+        transform.position = Vector3.MoveTowards(transform.position, player.transform.position, Time.deltaTime * speed);
+
+        _footstepTimer += Time.deltaTime;
+        if (_footstepTimer < footstepInterval) return;
+        _footstepTimer -= footstepInterval;
+        GetComponent<AudioSource>().Play();
     }
 
     public void BeginEncounter()
@@ -45,8 +49,11 @@ public class Monster : MonoBehaviour
 
     public void EndEncounter()
     {
-        if (Current  == null || Current != this) return;
+        if (Current == null || Current != this) return;
+
+        AudioManager.Instance.PlaySound("breath");
         GetComponent<Collider>().enabled = false;
+        SetVisible(false);
         Current = null;
         _ended = true;
     }

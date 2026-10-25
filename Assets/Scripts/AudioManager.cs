@@ -38,6 +38,11 @@ public class AudioManager : MonoBehaviour
     {
         foreach (var source in _sources.Where(source => source.name == name)) source.source.Play();
     }
+
+    public AudioClip GetClip(string name)
+    {
+        return sounds.Where(sound => sound.name == name).Select(sound => sound.clip).FirstOrDefault();
+    }
 }
 
 [System.Serializable]

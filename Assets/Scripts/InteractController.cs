@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -28,11 +29,16 @@ public class InteractController : MonoBehaviour
     [SerializeField] private Light cameraLight;
     [SerializeField] private float gunFlashDuration = 0.1f;
     [SerializeField] private float cameraFlashDuration = 0.1f;
+    [SerializeField] private float maxRadioDistance = 50.0f;
+
+    private AudioSource _radioAudio;
+    private float _radioVolume;
 
     private void Awake()
     {
         gunLight.enabled = false;
         cameraLight.enabled = false;
+        _radioAudio = radioItem.GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -44,21 +50,14 @@ public class InteractController : MonoBehaviour
         if (Keyboard.current.digit3Key.wasPressedThisFrame)
             currentItem = Item.Radio;
 
-        gunItem.gameObject.SetActive(false);
-        cameraItem.gameObject.SetActive(false);
-        radioItem.gameObject.SetActive(false);
+        gunItem.gameObject.SetActive(currentItem == Item.Gun);
+        cameraItem.gameObject.SetActive(currentItem == Item.Camera);
+        radioItem.gameObject.SetActive(currentItem == Item.Radio);
 
-        switch (currentItem)
-        {
-            case Item.Gun: gunItem.gameObject.SetActive(true); break;
-            case Item.Camera: cameraItem.gameObject.SetActive(true); break;
-            case Item.Radio: radioItem.gameObject.SetActive(true); break;
-        }
+        UpdateRadio();
 
         if (currentItem == Item.Gun && Mouse.current.leftButton.wasPressedThisFrame)
-        {
             OnInteract(currentItem);
-        }
 
         var cam = Camera.main;
         if (!cam) return;
@@ -73,6 +72,28 @@ public class InteractController : MonoBehaviour
         OnInteract(currentItem);
     }
 
+    private void UpdateRadio()
+    {
+        var target = 0.0f;
+
+        if (currentItem == Item.Radio)
+        {
+            var closestDistance = FindObjectsByType<Anomaly>()
+                .Select(anomaly => Vector3.Distance(anomaly.transform.position, transform.position))
+                .Prepend(float.MaxValue)
+                .Min();
+
+            if (closestDistance < maxRadioDistance)
+            {
+                var t = 1.0f - (closestDistance / maxRadioDistance);
+                target = t * t;
+            }
+        }
+
+        _radioVolume = Mathf.MoveTowards(_radioVolume, target, 2.0f * Time.deltaTime);
+        _radioAudio.volume = _radioVolume;
+    }
+
     private void OnInteract(Item item)
     {
         switch (item)
@@ -84,6 +105,7 @@ public class InteractController : MonoBehaviour
 
     private IEnumerator FlashCamera()
     {
+        AudioManager.Instance.PlaySound("shutter");
         cameraLight.enabled = true;
         yield return new WaitForSeconds(cameraFlashDuration);
         cameraLight.enabled = false;
@@ -92,7 +114,11 @@ public class InteractController : MonoBehaviour
     private IEnumerator Shoot()
     {
         gunLight.enabled = true;
-        Monster.Current?.SetVisible(true);
+        if (Monster.Current != null)
+            Monster.Current.SetVisible(true);
+
+        AudioManager.Instance.PlaySound("shoot");
+
         yield return new WaitForSeconds(gunFlashDuration);
 
         var ray = Camera.main?.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
@@ -101,6 +127,8 @@ public class InteractController : MonoBehaviour
             monster.EndEncounter();
 
         gunLight.enabled = false;
-        Monster.Current?.SetVisible(false);
+
+        if (Monster.Current != null)
+            Monster.Current.SetVisible(false);
     }
 }
