@@ -24,6 +24,11 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(nameof(LoseCoroutine));
     }
+    
+    public void Win()
+    {
+        StartCoroutine(nameof(WinCoroutine));
+    }
 
     private IEnumerator LoseCoroutine()
     {
@@ -31,5 +36,13 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(loseDuration);
         losePanel.SetActive(false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    
+    private IEnumerator WinCoroutine()
+    {
+        losePanel.SetActive(true);
+        yield return new WaitForSeconds(loseDuration);
+        losePanel.SetActive(false);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }

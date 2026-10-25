@@ -123,7 +123,7 @@ public class InteractController : MonoBehaviour
 
         var ray = Camera.main?.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         if (ray != null && Physics.Raycast(ray.Value, out var hit) &&
-            hit.collider.gameObject.TryGetComponent<Monster>(out var monster))
+            hit.collider.TryGetComponent<Monster>(out var monster))
             monster.EndEncounter();
 
         gunLight.enabled = false;

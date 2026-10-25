@@ -8,13 +8,18 @@ public class Monster : MonoBehaviour
 
     [SerializeField] private float speed;
     [SerializeField] private float footstepInterval = 0.25f;
+    [SerializeField] private bool alwaysVisible;
 
     private bool _ended;
     private float _footstepTimer;
 
     private void Start()
     {
-        GetComponent<SpriteRenderer>().enabled = false;
+        if (!alwaysVisible)
+        {
+            GetComponent<SpriteRenderer>().enabled = false;
+        }
+
         GetComponent<Collider>().enabled = false;
     }
 
@@ -60,6 +65,7 @@ public class Monster : MonoBehaviour
 
     public void SetVisible(bool visible)
     {
+        if (alwaysVisible) return;
         GetComponent<SpriteRenderer>().enabled = visible;
     }
 }
