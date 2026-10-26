@@ -12,12 +12,16 @@ public class AudioManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
-
-    private void Start()
-    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        
         foreach (var sound in sounds)
         {
             var src = new Source
@@ -31,6 +35,7 @@ public class AudioManager : MonoBehaviour
             _sources[_sources.Count - 1].source.pitch = sound.pitch;
             _sources[_sources.Count - 1].source.loop = sound.loop;
             _sources[_sources.Count - 1].source.clip = sound.clip;
+            _sources[_sources.Count - 1].source.playOnAwake = sound.loop;
         }
     }
 

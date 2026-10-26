@@ -30,9 +30,11 @@ public class InteractController : MonoBehaviour
     [SerializeField] private float gunFlashDuration = 0.1f;
     [SerializeField] private float cameraFlashDuration = 0.1f;
     [SerializeField] private float maxRadioDistance = 50.0f;
+    [SerializeField] private float gunShootInterval = 2.0f;
 
     private AudioSource _radioAudio;
     private float _radioVolume;
+    private float _gunTimer;
 
     private void Awake()
     {
@@ -43,6 +45,8 @@ public class InteractController : MonoBehaviour
 
     private void Update()
     {
+        _gunTimer += Time.deltaTime;
+
         if (Keyboard.current.digit1Key.wasPressedThisFrame)
             currentItem = Item.Gun;
         if (Keyboard.current.digit2Key.wasPressedThisFrame)
@@ -98,7 +102,10 @@ public class InteractController : MonoBehaviour
     {
         switch (item)
         {
-            case Item.Gun: StartCoroutine(nameof(Shoot)); break;
+            case Item.Gun when _gunTimer > gunShootInterval && Monster.Current != null:
+                _gunTimer = 0.0f;
+                StartCoroutine(nameof(Shoot));
+                break;
             case Item.Camera: StartCoroutine(nameof(FlashCamera)); break;
         }
     }
