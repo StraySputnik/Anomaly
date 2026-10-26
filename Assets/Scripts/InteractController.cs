@@ -31,6 +31,7 @@ public class InteractController : MonoBehaviour
     [SerializeField] private float cameraFlashDuration = 0.1f;
     [SerializeField] private float maxRadioDistance = 50.0f;
     [SerializeField] private float gunShootInterval = 2.0f;
+    [SerializeField] private ParticleSystem gunPS;
 
     private AudioSource _radioAudio;
     private float _radioVolume;
@@ -125,6 +126,7 @@ public class InteractController : MonoBehaviour
             Monster.Current.SetVisible(true);
 
         AudioManager.Instance.PlaySound("shoot");
+        gunPS.Play();
 
         yield return new WaitForSeconds(gunFlashDuration);
 
