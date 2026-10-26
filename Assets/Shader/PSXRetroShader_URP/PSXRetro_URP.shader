@@ -114,6 +114,9 @@
                 OUT.tangentWS = float4(normalInputs.tangentWS, IN.tangentOS.w * GetOddNegativeScale());
 
                 float4 posCS = TransformWorldToHClip(posWS);
+                // Use unsnapped position for screen-space effects to avoid direction-dependent glitches
+                OUT.screenPos = ComputeScreenPos(posCS);
+
                 float4 snapped = posCS;
                 snapped.xyz = posCS.xyz / posCS.w;
                 snapped.x = floor(snapped.x * _VertexSnap) / _VertexSnap;
@@ -124,7 +127,6 @@
                 float2 uv = TRANSFORM_TEX(IN.uv, _MainTex);
                 OUT.uvPersp = uv;
                 OUT.uvAffine = uv;
-                OUT.screenPos = ComputeScreenPos(snapped);
 
                 return OUT;
             }
@@ -185,6 +187,8 @@
                 albedo.rgb *= (1.0 - fade);
 
                 float2 screenUV = inputData.normalizedScreenSpaceUV;
+                // Clamp to avoid edge artifacts on some platforms
+                screenUV = saturate(screenUV);
                 float2 pixelCoord = screenUV * _ScreenParams.xy;
                 uint px = (uint)pixelCoord.x % 4;
                 uint py = (uint)pixelCoord.y % 4;
